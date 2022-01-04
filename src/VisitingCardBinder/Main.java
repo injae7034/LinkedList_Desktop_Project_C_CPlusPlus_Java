@@ -163,7 +163,6 @@ public class Main
     {
         //사용자로부터 콘솔창에 입려을 받기 위해 Scanner 생성하기
         Scanner scanner = new Scanner(System.in);
-        int index = 0;
         String going = "Y";
         while (going.equals("Y") == true || going.equals("y") == true)
         {
@@ -186,8 +185,9 @@ public class Main
                 String telephoneNumber;
                 String faxNumber;
                 String url;
-                for(VisitingCard visitingCard : indexes)
+                for(int i = 0; i < indexes.size(); i++)
                 {
+                    VisitingCard visitingCard = indexes.get(i);
                     personalName = visitingCard.getPersonalName();
                     position = visitingCard.getPosition();
                     cellularPhoneNumber = visitingCard.getCellularPhoneNumber();
@@ -197,11 +197,39 @@ public class Main
                     telephoneNumber = visitingCard.getFaxNumber();
                     faxNumber = visitingCard.getFaxNumber();
                     url = visitingCard.getUrl();
-                    System.out.printf("\t*성명 : %s, *직책 : %s, *휴대폰번호 : %s, *이메일주소 : %s,\n" +
+                    System.out.printf("\t*번호: %d, *성명 : %s, *직책 : %s, *휴대폰번호 : %s, *이메일주소 : %s,\n" +
                                     "\t*상호명 : %s, *주소 : %s, *전화번호 : %s, *팩스번호 : %s, *홈페이지주소 : %s\n",
-                            personalName, position, cellularPhoneNumber, emailAddress,
+                            i + 1, personalName, position, cellularPhoneNumber, emailAddress,
                             companyName, address, telephoneNumber, faxNumber, url);
                     System.out.println();
+                }
+                System.out.printf("\t찾은 명함을 선택하시겠습니까?(Y/N) ");
+                String choosing = scanner.nextLine();
+                if(choosing.equals("Y") == true || choosing.equals("y") == true)
+                {
+                    while(true)
+                    {
+                        System.out.printf("\t번호 : ");
+                        //nextInt대신에 nextLine을 써야 뒤에서 탈이 안남.
+                        String stringIndex = scanner.nextLine();
+                        int index = Integer.valueOf(stringIndex);
+                        //배열첨자는 0부터 시작하기 때문에 사용자가 선택한 번호에서 -1해줘야함!
+                        index--;
+                        //번호를 제대로 눌렀으면(번호가 배열길이를 넘지 않고 음수가 아니면)
+                        if(index < indexes.size() && index >= 0)
+                        {
+                            //현재 명함을 찾은 명함으로 이동한다.(바꾼다.)
+                            visitingCardBinder.move(indexes.get(index));
+                            //메소드 종료
+                            return;
+                        }
+                        //번호를 잘못눌렀으면
+                        else
+                        {
+                            System.out.println("\t번호를 잘못 선택하셨습니다.");
+                            System.out.println("\t다시 번호를 선택해주세요.");
+                        }
+                    }
                 }
             }
             //찾은게 없으면
