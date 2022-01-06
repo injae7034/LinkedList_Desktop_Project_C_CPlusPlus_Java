@@ -300,11 +300,10 @@ public class Main
         //디스크파일에서는 Personl데이터 파일과 Company데이터 파일이 각각 따로 저장되어 있어서 load할 때
         //개인의 정보와 일치하는 회사정보를 찾기 위한 일련의 과정(반복)이 필요했는데 MySQL에서는 아래처럼
         //INNNER JOIN 시키면 자동으로 개인 정보와 이에 일치하는 회사정보를 한번에 구할 수 있음!
-        String sql = "SELECT Company.name, Company.address, Company.telephoneNumber," +
-                " Company.faxNumber, Company.url, Personal.name, Personal.position, " +
-                "Personal.cellularPhoneNumber, Personal.emailAddress " +
-                "FROM Company INNER JOIN Personal ON Company.companyCode = Personal.companyCode" +
-                " ORDER BY Personal.code;";
+        String sql = "SELECT Personal.name, Personal.position, Personal.cellularPhoneNumber," +
+                " Personal.emailAddress, Company.name, Company.address, Company.telephoneNumber," +
+                " Company.faxNumber, Company.url FROM Company INNER JOIN Personal ON " +
+                "Company.companyCode = Personal.companyCode ORDER BY Personal.code;";
         try(//Connection(데이터베이스와 연결을 위한 객체)생성 - getConnection(연결문자열, DB-ID, DB-PW)
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306" +
                     "/VisitingCardBinder?serverTimezone=Asia/Seoul", "root", "1q2w3e");
@@ -313,34 +312,19 @@ public class Main
             //sql 문장을 실행하고 결과를 리턴
             //ResultSet(SQL 질의에 의해 생성된 테이블을 저장하는 객체)
             //이제 rs에는 쿼리문에 의해서 찾은 DB의 전체 Comapany, Personal 데이터가 저장됨.
-            ResultSet rs = stmt.executeQuery(sql);)
+            ResultSet rs = stmt.executeQuery(sql))
         {
-            String companyName;
-            String address;
-            String telephoneNumber;
-            String faxNumber;
-            String url;
-            String personalName;
-            String position;
-            String cellularPhoneNumber;
-            String emailAddress;
             VisitingCard visitingCard = null;
             //rs에 저장된 데이터가 끝날때까지 반복한다.
             while(rs.next())
             {
-                //rs에서 각 필드들의 데이터를 읽는다.
-                companyName = rs.getString(1);
-                address = rs.getString(2);
-                telephoneNumber = rs.getString(3);
-                faxNumber = rs.getString(4);
-                url = rs.getString(5);
-                personalName = rs.getString(6);
-                position = rs.getString(7);
-                cellularPhoneNumber = rs.getString(8);
-                emailAddress = rs.getString(9);
-                //읽은 데이터를 바탕으로 새로운 명함을 생성한다.
-                visitingCard = new VisitingCard(personalName, position, cellularPhoneNumber,
-                        emailAddress, companyName, address, telephoneNumber, faxNumber, url);
+                //rs에서 각 필드들의 데이터를 읽어 새로운 명함을 생성한다.
+                //sql쿼리문에서 회사정보부터 출력하고 있어서
+                visitingCard = new VisitingCard(rs.getString(1),
+                        rs.getString(2), rs.getString(3),
+                        rs.getString(4), rs.getString(5),
+                        rs.getString(6), rs.getString(7),
+                        rs.getString(8), rs.getString(9));
                 //새로 생성한 명함을 명함철에 끼운다.
                 visitingCardBinder.takeIn(visitingCard);
             }
@@ -353,11 +337,9 @@ public class Main
     //save
     public static void save()
     {
+        //DB에 있는 데이터중에 companyCode와 personalCode를 personalCode기준으로 오름차순하여 검색하는 쿼리문
         String sql = "SELECT Company.companyCode, Personal.code FROM Company INNER JOIN Personal " +
         "ON Company.companyCode=Personal.companyCode ORDER BY Personal.code;";
-        String sql2 = "DELETE FROM Personal;";
-        //Company는 Personal이 먼저 다 지워지기전에는 지울수없음. 따라서 Personal을 먼저 다 지워야함.
-        String sql3 = "DELETE FROM Company;";
         try(//Connection(데이터베이스와 연결을 위한 객체)생성 - getConnection(연결문자열, DB-ID, DB-PW)
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306" +
                     "/VisitingCardBinder?serverTimezone=Asia/Seoul", "root", "1q2w3e");
@@ -367,17 +349,15 @@ public class Main
             //rs는 db의 Company와 Personal의 전체 코드를 테이블형식으로 저장함.
             ResultSet rs = stmt.executeQuery(sql);
             //PreStatement(여러번 SQL 문을 데이터베이스에 보내기위한 객체)생성
-            //Statement stmt2 = con.createStatement();
-            PreparedStatement pstmt = con.prepareStatement(sql2);
-            PreparedStatement pstmt2 = con.prepareStatement(sql3);)
+            PreparedStatement pstmt = con.prepareStatement("DELETE FROM Personal;"))
         {
-            //DB에 있는 Personal 객체 정보들을 모두 지움.
+            //Company는 Personal이 먼저 다 지워지기전에는 지울수없음!
+            //먼저 DB에 있는 Personal 객체 정보들을 모두 지움. 
             pstmt.executeUpdate();
-            //DB에 있는 Company 객체 정보를  모두 지움.
-            pstmt2.executeUpdate();
+            //이후에 DB에 있는 Company 객체 정보를  모두 지움.
+            pstmt.executeUpdate("DELETE FROM Company;");
             String companyCode;//회사코드를 저장할 임시공간
             String personalCode;//개인코드를 저장할 임시공간
-            String sql4;
             //for each 구문을 통해 명함철의 처음 명함부터 마지막 명함까지 반복한다.
             for (VisitingCard visitingCard : visitingCardBinder.getVisitingCards())
             {
@@ -386,32 +366,32 @@ public class Main
                 //rs에서 companyCode를 구한다.
                 companyCode = rs.getString(1);
                 //rs에서 구한 companyCode로 db에서 해당코드가 있는지 찾는 쿼리문 만들기
-                sql4 = String.format("SELECT Company.name FROM Company WHERE companyCode = '%s';",
+                sql = String.format("SELECT Company.name FROM Company WHERE companyCode = '%s';",
                         companyCode);
                 //rs2를 새로 생성하여 companyCode로 찾은 상호명을 저장함.
-                try(ResultSet rs2 = pstmt.executeQuery(sql4);)
+                try(ResultSet rs2 = pstmt.executeQuery(sql))
                 {
                     //rs에 저장된 데이터가 없으면(해당 companyCode가 db에 없으면)
                     if(rs2.next() == false)
                     {
                         //db에 새로운 회사정보를 추가한다.
-                        sql4 = String.format("INSERT INTO Company(name, address," +
+                        sql = String.format("INSERT INTO Company(name, address," +
                                         " telephoneNumber, faxNumber, url, companyCode) " +
                                 "VALUES('%s', '%s', '%s', '%s', '%s', '%s');",
                                 visitingCard.getCompanyName(), visitingCard.getAddress(),
                                 visitingCard.getTelephoneNumber(), visitingCard.getFaxNumber(),
                                 visitingCard.getUrl(), companyCode);
-                        pstmt.executeUpdate(sql4);
+                        pstmt.executeUpdate(sql);
                     }
                 }
                 personalCode = rs.getString(2);
-                sql4 = String.format("INSERT INTO Personal(name, position," +
+                sql = String.format("INSERT INTO Personal(name, position," +
                                 " cellularPhoneNumber, emailAddress, code, companyCode) " +
                         "VALUES('%s', '%s', '%s', '%s', '%s', '%s');",
                         visitingCard.getPersonalName(), visitingCard.getPosition(),
                         visitingCard.getCellularPhoneNumber(), visitingCard.getEmailAddress(),
                         personalCode, companyCode);
-                pstmt.executeUpdate(sql4);
+                pstmt.executeUpdate(sql);
             }
         }
         catch (SQLException e)
@@ -424,20 +404,21 @@ public class Main
     {
         String code = "C0000";
         String newCode = null;
-        String sql = "SELECT Company.companyCode FROM Company;";
+        //회사코드를 기준으로 내림차순하여 회사코드를 검색함.
+        String sql = "SELECT Company.companyCode FROM Company ORDER BY companyCode DESC;";
         try(//Connection(데이터베이스와 연결을 위한 객체)생성 - getConnection(연결문자열, DB-ID, DB-PW)
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306" +
                     "/VisitingCardBinder?serverTimezone=Asia/Seoul", "root", "1q2w3e");
-            // Statement 객체 생성 및 move를 단방향이 아닌 자유롭게 할 수 있도록 하기 위한 조치
-            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
-                    ResultSet.CONCUR_UPDATABLE);
+            // Statement 객체 생성
+            Statement stmt = con.createStatement();
             //ResultSet(SQL 질의에 의해 생성된 테이블을 저장하는 객체)생성
-            //rs는 Personal의 전체 코드를 가지게 됨.
-            ResultSet rs = stmt.executeQuery(sql);)
+            //rs는 Company의 전체코드를 내림차순으로 가지게 됨.
+            ResultSet rs = stmt.executeQuery(sql))
         {
             int number;
             //rs에서 마지막으로 이동한 후에 저장된 데이터가 있으면
-            if(rs.last())
+            //내림차순 정렬이기떄문에 처음으로 이동하면 마지맛 회사코드임.
+            if(rs.next())
             {
                 //마지막 코드를 저장한다.
                 code = rs.getString(1);
@@ -458,20 +439,26 @@ public class Main
     {
         String code = "P0000";
         String newCode = null;
-        String sql = "SELECT Personal.code FROM Personal;";
+        //개인의 personCode를 기준으로 검색해야함! ORDER BY code DESC없이 검색하면
+        //부모인 회사코드 기준으로 검색하기 때문에 personalCode는 더 앞에 있지만(먼저 추가되었지만)
+        //개인코드기준이 아니면(회사코드기준이면) 나중에 입력된 personalCode보다 뒤에가는경우가 있어서
+        //개인코드 중복이 발생할 수 있음.(새로운 코드를 생성할 때는 항상 개인의 마지막코드 +1 을 하여 생성
+        //하는데 회사기준으로 개인코드가 출력되면 마지막에 검색된 개인코드가 마지막이 아닐 수도 있기 때문에!)
+        String sql = "SELECT Personal.code FROM Personal ORDER BY code DESC;";
         try(//Connection(데이터베이스와 연결을 위한 객체)생성 - getConnection(연결문자열, DB-ID, DB-PW)
             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306" +
                     "/VisitingCardBinder?serverTimezone=Asia/Seoul", "root", "1q2w3e");
-            // Statement 객체 생성 및 move를 단방향이 아닌 자유롭게 할 수 있도록 하기 위한 조치
-            Statement stmt = con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE,
-                    ResultSet.CONCUR_UPDATABLE);
+            // Statement 객체 생성
+            Statement stmt = con.createStatement();
             //ResultSet(SQL 질의에 의해 생성된 테이블을 저장하는 객체)생성
-            //rs는 Personal의 전체 코드를 가지게 됨.
-            ResultSet rs = stmt.executeQuery(sql);)
+            //rs는 Personal의 전체 코드를 내림차순으로 가지게됨!
+            ResultSet rs = stmt.executeQuery(sql))
         {
             int number;
-            //rs에서 마지막으로 이동한 후에 저장된 데이터가 있으면
-            if(rs.last())
+            //rs에서 다음으로 이동한 후에 저장된 데이터가 있으면
+            //위에서 개인코드 기준으로 내림차순으로 정렬하였기 때문에 다음으로 이동하면
+            //첫번째 항목이 나오는데 첫번째 항목이 개인의 마지막 코드 번호를 저장하고 있음.
+            if(rs.next())
             {
                 //마지막 코드를 저장한다.
                 code = rs.getString(1);
@@ -500,7 +487,7 @@ public class Main
                 "/VisitingCardBinder?serverTimezone=Asia/Seoul", "root", "1q2w3e");
             PreparedStatement pstmt = con.prepareStatement(sql);
             //rs에 위의 쿼리문으로 찾은 결과를 저장함.
-            ResultSet rs = pstmt.executeQuery();)
+            ResultSet rs = pstmt.executeQuery())
         {
             String companyCode;
             //쿼리문으로 DB에서 찾은 데이터가 있으면(rs에 저장된 데이터가 있으면)(중복이 있으면)
@@ -521,10 +508,7 @@ public class Main
                         visitingCard.getCompanyName(), visitingCard.getAddress(),
                         visitingCard.getTelephoneNumber(), visitingCard.getFaxNumber(),
                         visitingCard.getUrl(), companyCode);
-                try(PreparedStatement pstmt2 = con.prepareStatement(sql);)
-                {
-                    pstmt2.executeUpdate();
-                }
+                pstmt.executeUpdate(sql);
             }
             //데이터베이스에서 새로운 개인정보를 추가하기 위한 쿼리문 생성하기
             sql = String.format("INSERT INTO Personal(name, position, " +
@@ -533,10 +517,7 @@ public class Main
                     visitingCard.getPersonalName(), visitingCard.getPosition(),
                     visitingCard.getCellularPhoneNumber(), visitingCard.getEmailAddress(),
                     getPersonalCode(), companyCode);
-            try(PreparedStatement pstmt2 = con.prepareStatement(sql);)
-            {
-                pstmt2.executeUpdate();
-            }
+            pstmt.executeUpdate(sql);
         }
         catch (SQLException e)
         {
@@ -546,6 +527,7 @@ public class Main
     //delete
     public static void delete(VisitingCard visitingCard)
     {
+        //전체명함의 정보를 통해 정확하게 단 하나의 companyCode와 personalCode를 검색한다.
         String sql = String.format("SELECT Company.companyCode, Personal.code " +
                         "FROM Company INNER JOIN Personal ON " +
                         "Company.companyCode=Personal.companyCode WHERE Company.name='%s' AND" +
@@ -562,17 +544,24 @@ public class Main
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql);)
         {
+            //rs의 처음이자 마지막 항목으로 이동한다.(rs는 처음에는 처음항목 앞에 위치하고 있음!)
             rs.next();
+            //companyCode를 구한다.
             String companyCode = rs.getString(1);
-            String personalCode = rs.getString(2);
-            sql = String.format("DELETE FROM Personal WHERE code='%s';", personalCode);
+            //rs에서 personalCode를 구해서 해당개인코드의 개인데이터를 지운다.
+            sql = String.format("DELETE FROM Personal WHERE code='%s';", rs.getString(2));
             stmt.executeUpdate(sql);
+            //rs에서 구한 companyCode를 통해 회사에 소속된 개인들의 성명을 검색한다.
             sql = String.format("SELECT Personal.name FROM Personal WHERE companyCode='%s';"
                     , companyCode);
+            //rs2에는 해당 회사코드에 속하는 개인들의 이름정보가 저장됨
             try(ResultSet rs2 = stmt.executeQuery(sql);)
             {
-                if(rs2.next())
+                //만약 회사코드에 속하는 개인이 없으면
+                if(rs2.next() == false)
                 {
+                    //해당회사코드이 회사데이터를 DB에서 지운다.(반드시 회사에 속하는 개인이 있는지
+                    //먼저 체크한 후에 회사에 속하는 개인이 없을 경우 회사데이터를 지운다.)
                     sql = String.format("DELETE FROM Company WHERE companyCode='%s';",
                             companyCode);
                     stmt.executeUpdate(sql);

@@ -193,7 +193,7 @@ public class VisitingCardBinder implements Cloneable
     //visitingCards 구하기
     public LinkedList<VisitingCard> getVisitingCards() { return this.visitingCards; }
 
-    ////외부 파일에 있는 정보를 읽어서 VisitingCardBinder에 Load하기
+    //외부 파일에 있는 정보를 읽어서 VisitingCardBinder에 Load하기
     public int load()
     {
         //해당위치에 있는 data를 읽어 File객체를 생성한다.
@@ -331,14 +331,14 @@ public class VisitingCardBinder implements Cloneable
         {
             String companyInformation = "";//외부파일에서 회사정보를 담을 공간
             String companyName = "";//회사명을 담을 임시공간
-            int code = 0;//회사코드로 사용
+            int companyCode = 0;//회사코드로 사용
             //명함철의 마지막 명함까지 반복한다.
             for(VisitingCard visitingCard : this.visitingCards)
             {
                 //외부의 회사데이터 파일을 처음으로 이동시킨다.
                 companyAccessFile.seek(0);
                 //코드를 초기화시킨다.
-                code = 1;
+                companyCode = 1;
                 //외부 회사데이터 파일이 마지막이 아닌 동안 반복한다.
                 while((companyInformation = companyAccessFile.readLine()) != null)
                 {
@@ -354,29 +354,22 @@ public class VisitingCardBinder implements Cloneable
                         break;
                     }
                     //회사의 코드를 증가시킨다.
-                    code++;
+                    companyCode++;
                 }
                 //파일의 마지막이면(명함철에서 읽은 명함의 상호명이 외부 회사파일의 상호명에 없으면)
                 if(companyInformation == null)
                 {
-                    companyName = visitingCard.getCompanyName();
-                    String address = visitingCard.getAddress();
-                    String telephoneNumber = visitingCard.getTelephoneNumber();
-                    String faxNumber = visitingCard.getFaxNumber();
-                    String url = visitingCard.getUrl();
                     //외부 회사파일에 중복이 안된 명함의 회사 정보를 출력한다.
-                    companyAccessFile.writeUTF(new String( companyName+ "," + address
-                        + "," + telephoneNumber + "," + faxNumber + "," + url + "\n"));
+                    companyAccessFile.writeUTF(new String( visitingCard.getCompanyName()+
+                            "," + visitingCard.getAddress() + "," + visitingCard.getTelephoneNumber()
+                            + "," + visitingCard.getFaxNumber() + ","
+                            + visitingCard.getUrl() + "\n"));
                 }
                 //외부 개인파일에 개인 정보를 출력한다.
-                String companyCode = Integer.toString(code);
-                String personalName = visitingCard.getPersonalName();
-                String position = visitingCard.getPosition();
-                String cellularPhoneNumber = visitingCard.getCellularPhoneNumber();
-                String emailAddress = visitingCard.getEmailAddress();
-                personalBufferedWriter.write(new String(companyCode + "," +
-                        personalName + "," + position + "," + cellularPhoneNumber + ","
-                        + emailAddress + "\n"));
+                personalBufferedWriter.write(new String(Integer.toString(companyCode) + "," +
+                        visitingCard.getPersonalName() + "," +  visitingCard.getPosition()
+                        + "," + visitingCard.getCellularPhoneNumber() + ","
+                        + visitingCard.getEmailAddress() + "\n"));
             }
             personalBufferedWriter.flush();
         } catch (IOException e) { e.printStackTrace(); }
