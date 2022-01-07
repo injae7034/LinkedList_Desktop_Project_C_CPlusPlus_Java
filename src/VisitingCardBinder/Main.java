@@ -34,7 +34,7 @@ public class Main
                 case 1: formFoTakingIn(); break;
                 case 2: formFoFinding(); break;
                 case 3: formFoTakingOut(); break;
-                case 4: visitingCardBinder.arrange(); break;
+                case 4: visitingCardBinder.arrange(); replace(); break;
                 case 5: visitingCardBinder.first(); break;
                 case 6: visitingCardBinder.previous(); break;
                 case 7: visitingCardBinder.next(); break;
@@ -415,7 +415,6 @@ public class Main
             //rs는 Company의 전체코드를 내림차순으로 가지게 됨.
             ResultSet rs = stmt.executeQuery(sql))
         {
-            int number;
             //rs에서 마지막으로 이동한 후에 저장된 데이터가 있으면
             //내림차순 정렬이기떄문에 처음으로 이동하면 마지맛 회사코드임.
             if(rs.next())
@@ -424,7 +423,7 @@ public class Main
                 code = rs.getString(1);
             }
             code = code.substring(1,5);
-            number = Integer.parseInt(code);
+            int number = Integer.parseInt(code);
             number++;
             newCode = String.format("C%04d", number);
         }
@@ -454,7 +453,6 @@ public class Main
             //rs는 Personal의 전체 코드를 내림차순으로 가지게됨!
             ResultSet rs = stmt.executeQuery(sql))
         {
-            int number;
             //rs에서 다음으로 이동한 후에 저장된 데이터가 있으면
             //위에서 개인코드 기준으로 내림차순으로 정렬하였기 때문에 다음으로 이동하면
             //첫번째 항목이 나오는데 첫번째 항목이 개인의 마지막 코드 번호를 저장하고 있음.
@@ -464,7 +462,7 @@ public class Main
                 code = rs.getString(1);
             }
             code = code.substring(1,5);
-            number = Integer.parseInt(code);
+            int number = Integer.parseInt(code);
             number++;
             newCode = String.format("P%04d", number);
         }
@@ -571,6 +569,31 @@ public class Main
         catch (SQLException e)
         {
             System.out.println("[SQL Error : " + e.getMessage() +"]");
+        }
+    }
+    //replace
+    public static void replace()
+    {
+        try (//Connection(데이터베이스와 연결을 위한 객체)생성 - getConnection(연결문자열, DB-ID, DB-PW)
+             Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306" +
+                     "/VisitingCardBinder?serverTimezone=Asia/Seoul", "root", "1q2w3e");
+             //PreStatement(여러번 SQL 문을 데이터베이스에 보내기위한 객체)생성
+             PreparedStatement pstmt = con.prepareStatement("DELETE FROM Personal;"))
+        {
+            //Company는 Personal이 먼저 다 지워지기전에는 지울수없음!
+            //먼저 DB에 있는 Personal 객체 정보들을 모두 지움.
+            pstmt.executeUpdate();
+            //이후에 DB에 있는 Company 객체 정보를  모두 지움.
+            pstmt.executeUpdate("DELETE FROM Company;");
+            //반복을 돌리면서 새로 insert함.
+            for (VisitingCard visitingCard : visitingCardBinder.getVisitingCards())
+            {
+                insert(visitingCard);
+            }
+        }
+        catch (SQLException e)
+        {
+            System.out.println("[SQL Error : " + e.getMessage() + "]");
         }
     }
 }
