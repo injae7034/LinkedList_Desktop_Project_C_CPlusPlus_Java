@@ -1,0 +1,7 @@
+1,나길동,과장,01088930390,Na@naver.com
+2,홍길동,대리,01099893049,Hong@naver.com
+2,홍길동,부장,01033471902,Hong@gmail.com
+3,박길동,사원,01099890734,Park@naver.com
+4,공길동,부장,01088434756,Gong@naver.com
+5,봉길동,주임,01067560493,Bong@naver.com
+4,정길동,이사,01044908890,Jung@naver.com
