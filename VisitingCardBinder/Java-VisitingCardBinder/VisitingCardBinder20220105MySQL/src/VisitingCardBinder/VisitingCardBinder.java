@@ -25,17 +25,17 @@ public class VisitingCardBinder implements Cloneable
     {
         //복사할 대상 생성
         VisitingCardBinder visitingCardBinder = new VisitingCardBinder();
-        //VistingCard 임시 저장소
-        VisitingCard tempVisitingCard = null;
-        //for each문으로 VisitingCard를 반복돌리면서 추가하기
+        //for each문으로 VisitingCard를 마지막까지 반복하기
         for (VisitingCard visitingCard : this.visitingCards)
         {
-            tempVisitingCard = visitingCard.clone();
-            visitingCardBinder.visitingCards.add(tempVisitingCard);
+            //VisitingCard를 clone한 반환값(VisitingCard복사본)을 명함철(복사본)에 추가하기
+            visitingCardBinder.visitingCards.add(visitingCard.clone());
+            //명함철(복사본)의 현재 위치를 마지막 명함위치로 설정하기
             visitingCardBinder.current = visitingCardBinder.visitingCards.getLast();
+            //명함철(복사본)의 길이를 증가시키기
             visitingCardBinder.length++;
         }
-        //복사본 반환
+        //명함철(복사본) 반환
         return visitingCardBinder;
     }
     //TakeIn
