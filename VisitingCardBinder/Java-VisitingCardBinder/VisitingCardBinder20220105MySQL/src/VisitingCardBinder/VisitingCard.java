@@ -31,8 +31,7 @@ public class VisitingCard implements Cloneable
     @Override
     public VisitingCard clone() throws CloneNotSupportedException
     {
-        VisitingCard visitingCard = new VisitingCard(this.personal.clone(), this.company.clone());
-        return  visitingCard;
+        return new VisitingCard(this.personal.clone(), this.company.clone());
     }
     //같은 VisitingCard 인지 확인하기(오버라이딩하기)
     @Override
