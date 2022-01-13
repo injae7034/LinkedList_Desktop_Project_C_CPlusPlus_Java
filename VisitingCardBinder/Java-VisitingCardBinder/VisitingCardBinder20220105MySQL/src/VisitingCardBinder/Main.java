@@ -314,19 +314,15 @@ public class Main
             //이제 rs에는 쿼리문에 의해서 찾은 DB의 전체 Comapany, Personal 데이터가 저장됨.
             ResultSet rs = stmt.executeQuery(sql))
         {
-            VisitingCard visitingCard = null;
             //rs에 저장된 데이터가 끝날때까지 반복한다.
             while(rs.next())
             {
-                //rs에서 각 필드들의 데이터를 읽어 새로운 명함을 생성한다.
-                //sql쿼리문에서 회사정보부터 출력하고 있어서
-                visitingCard = new VisitingCard(rs.getString(1),
+                //새로 생성한 명함을 명함철에 끼운다.
+                visitingCardBinder.takeIn(new VisitingCard(rs.getString(1),
                         rs.getString(2), rs.getString(3),
                         rs.getString(4), rs.getString(5),
                         rs.getString(6), rs.getString(7),
-                        rs.getString(8), rs.getString(9));
-                //새로 생성한 명함을 명함철에 끼운다.
-                visitingCardBinder.takeIn(visitingCard);
+                        rs.getString(8), rs.getString(9)));
             }
         }
         catch (SQLException e)
@@ -361,37 +357,41 @@ public class Main
             //for each 구문을 통해 명함철의 처음 명함부터 마지막 명함까지 반복한다.
             for (VisitingCard visitingCard : visitingCardBinder.getVisitingCards())
             {
-                //rs를 이동시켜준다.
-                rs.next();
-                //rs에서 companyCode를 구한다.
-                companyCode = rs.getString(1);
-                //rs에서 구한 companyCode로 db에서 해당코드가 있는지 찾는 쿼리문 만들기
-                sql = String.format("SELECT Company.name FROM Company WHERE companyCode = '%s';",
-                        companyCode);
-                //rs2를 새로 생성하여 companyCode로 찾은 상호명을 저장함.
-                try(ResultSet rs2 = pstmt.executeQuery(sql))
+                //rs를 다음으로 이동시킨 뒤에 데이터가 있으면
+                if(rs.next())
                 {
-                    //rs에 저장된 데이터가 없으면(해당 companyCode가 db에 없으면)
-                    if(rs2.next() == false)
+                    //rs에서 companyCode를 구한다.
+                    companyCode = rs.getString(1);
+                    //rs에서 구한 companyCode로 db에서 해당코드가 있는지 찾는 쿼리문 만들기
+                    sql = String.format("SELECT Company.name FROM Company WHERE companyCode = '%s';",
+                            companyCode);
+                    //rs2를 새로 생성하여 companyCode로 찾은 상호명을 저장함.
+                    try(ResultSet rs2 = pstmt.executeQuery(sql))
                     {
-                        //db에 새로운 회사정보를 추가한다.
-                        sql = String.format("INSERT INTO Company(name, address," +
-                                        " telephoneNumber, faxNumber, url, companyCode) " +
-                                "VALUES('%s', '%s', '%s', '%s', '%s', '%s');",
-                                visitingCard.getCompanyName(), visitingCard.getAddress(),
-                                visitingCard.getTelephoneNumber(), visitingCard.getFaxNumber(),
-                                visitingCard.getUrl(), companyCode);
-                        pstmt.executeUpdate(sql);
+                        //rs2를 다음으로 이동시킨 뒤에 데이터가 없으면(해당 companyCode가 db에 없으면)
+                        if(rs2.next() == false)
+                        {
+                            //db에 새로운 회사정보를 추가한다.
+                            sql = String.format("INSERT INTO Company(name, address," +
+                                            " telephoneNumber, faxNumber, url, companyCode) " +
+                                            "VALUES('%s', '%s', '%s', '%s', '%s', '%s');",
+                                    visitingCard.getCompanyName(), visitingCard.getAddress(),
+                                    visitingCard.getTelephoneNumber(), visitingCard.getFaxNumber(),
+                                    visitingCard.getUrl(), companyCode);
+                            pstmt.executeUpdate(sql);
+                        }
                     }
+                    //rs에서 personalCode를 구한다.
+                    personalCode = rs.getString(2);
+                    //db에 새로운 개인 정보를 추가한다.
+                    sql = String.format("INSERT INTO Personal(name, position," +
+                                    " cellularPhoneNumber, emailAddress, code, companyCode) " +
+                                    "VALUES('%s', '%s', '%s', '%s', '%s', '%s');",
+                            visitingCard.getPersonalName(), visitingCard.getPosition(),
+                            visitingCard.getCellularPhoneNumber(), visitingCard.getEmailAddress(),
+                            personalCode, companyCode);
+                    pstmt.executeUpdate(sql);
                 }
-                personalCode = rs.getString(2);
-                sql = String.format("INSERT INTO Personal(name, position," +
-                                " cellularPhoneNumber, emailAddress, code, companyCode) " +
-                        "VALUES('%s', '%s', '%s', '%s', '%s', '%s');",
-                        visitingCard.getPersonalName(), visitingCard.getPosition(),
-                        visitingCard.getCellularPhoneNumber(), visitingCard.getEmailAddress(),
-                        personalCode, companyCode);
-                pstmt.executeUpdate(sql);
             }
         }
         catch (SQLException e)
@@ -416,14 +416,17 @@ public class Main
             ResultSet rs = stmt.executeQuery(sql))
         {
             //rs에서 마지막으로 이동한 후에 저장된 데이터가 있으면
-            //내림차순 정렬이기떄문에 처음으로 이동하면 마지맛 회사코드임.
+            //내림차순 정렬이기떄문에 처음으로 이동하면 마지막 회사코드임.
             if(rs.next())
             {
                 //마지막 코드를 저장한다.
                 code = rs.getString(1);
             }
+            //회사코드에서 숫자부분만 추출함
             code = code.substring(1,5);
+            //문자열로 된 숫자부분을 정수화시킴
             int number = Integer.parseInt(code);
+            //코드에 값을 1증가시킨 다음 다시 문자열 회사코드 생성
             number++;
             newCode = String.format("C%04d", number);
         }
@@ -461,8 +464,11 @@ public class Main
                 //마지막 코드를 저장한다.
                 code = rs.getString(1);
             }
+            //개인 코드에 숫자부분만 추출함
             code = code.substring(1,5);
+            //문자열로 된 숫자부분을 정수화시킴
             int number = Integer.parseInt(code);
+            //숫자1을 증가시키고 다시 개인문자코드화시킴
             number++;
             newCode = String.format("P%04d", number);
         }
@@ -542,27 +548,30 @@ public class Main
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery(sql);)
         {
-            //rs의 처음이자 마지막 항목으로 이동한다.(rs는 처음에는 처음항목 앞에 위치하고 있음!)
-            rs.next();
-            //companyCode를 구한다.
-            String companyCode = rs.getString(1);
-            //rs에서 personalCode를 구해서 해당개인코드의 개인데이터를 지운다.
-            sql = String.format("DELETE FROM Personal WHERE code='%s';", rs.getString(2));
-            stmt.executeUpdate(sql);
-            //rs에서 구한 companyCode를 통해 회사에 소속된 개인들의 성명을 검색한다.
-            sql = String.format("SELECT Personal.name FROM Personal WHERE companyCode='%s';"
-                    , companyCode);
-            //rs2에는 해당 회사코드에 속하는 개인들의 이름정보가 저장됨
-            try(ResultSet rs2 = stmt.executeQuery(sql);)
+            //rs의 처음이자 마지막 항목으로 이동하여 데이터가 있으면
+            if(rs.next())
             {
-                //만약 회사코드에 속하는 개인이 없으면
-                if(rs2.next() == false)
+                //companyCode를 구한다.
+                String companyCode = rs.getString(1);
+                //rs에서 personalCode를 구해서 해당개인코드의 개인데이터를 지운다.
+                sql = String.format("DELETE FROM Personal WHERE code='%s';",
+                        rs.getString(2));
+                stmt.executeUpdate(sql);
+                //rs에서 구한 companyCode를 통해 회사에 소속된 개인들의 성명을 검색한다.
+                sql = String.format("SELECT Personal.name FROM Personal WHERE companyCode='%s';"
+                        , companyCode);
+                //rs2에는 해당 회사코드에 속하는 개인들의 이름정보가 저장됨
+                try(ResultSet rs2 = stmt.executeQuery(sql);)
                 {
-                    //해당회사코드이 회사데이터를 DB에서 지운다.(반드시 회사에 속하는 개인이 있는지
-                    //먼저 체크한 후에 회사에 속하는 개인이 없을 경우 회사데이터를 지운다.)
-                    sql = String.format("DELETE FROM Company WHERE companyCode='%s';",
-                            companyCode);
-                    stmt.executeUpdate(sql);
+                    //만약 회사코드에 속하는 개인이 없으면
+                    if(rs2.next() == false)
+                    {
+                        //해당회사코드이 회사데이터를 DB에서 지운다.(반드시 회사에 속하는 개인이 있는지
+                        //먼저 체크한 후에 회사에 속하는 개인이 없을 경우 회사데이터를 지운다.)
+                        sql = String.format("DELETE FROM Company WHERE companyCode='%s';",
+                                companyCode);
+                        stmt.executeUpdate(sql);
+                    }
                 }
             }
         }
