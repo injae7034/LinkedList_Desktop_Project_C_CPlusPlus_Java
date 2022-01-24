@@ -82,11 +82,11 @@ public class Main
         System.out.println(visitingCardOne.equals(visitingCardTwo));
          */
         //System.out.println();
+/*
         //VisitingCardBinder 클래스 테스트
         System.out.println("VisitingCardBinder 클래스 테스트");
         //VisitingCardBinder 디폴트 생성자로 생성하기
         VisitingCardBinder originalVcb = new VisitingCardBinder();
-/*
         //명함철에 끼울 명함생성하기
         VisitingCard one = new VisitingCard("정길동", "대리",
                 "01024367967", "Jung@naver.com",
@@ -124,12 +124,12 @@ public class Main
         originalVcb.takeIn(five);
         originalVcb.takeIn(six);
         originalVcb.takeIn(seven);
-*/
         //1. 명함철에 끼운 명함들 출력하기
         System.out.println("1. 명함철에 끼운 명함들 출력하기");
-        originalVcb.load();
-        System.out.println("load한 후에 바로 명함철 출력하기");
+        //originalVcb.load();
+        //System.out.println("load한 후에 바로 명함철 출력하기");
         originalVcb.printAllVisitingCards();
+        //originalVcb.printAllVisitingCards();
         System.out.println();
         /*
         one = new VisitingCard("공길동", "과장",
@@ -159,8 +159,27 @@ public class Main
         originalVcb.takeIn(four);
         originalVcb.takeIn(five);
          */
+        //originalVcb.printAllVisitingCards();
+        //originalVcb.save();
+/*
+        //복사하기
+        VisitingCardBinder copyVcb = originalVcb.clone();
+        //2. 복사본 출력하기
+        System.out.println();
+        System.out.println("2. 복사본 출력하기");
+        copyVcb.printAllVisitingCards();
+        //복사본 정렬하기
+        copyVcb.arrange();
+        //3. 정렬한 복사본 출력하기
+        System.out.println();
+        System.out.println("3. 정렬한 복사본 출력하기");
+        copyVcb.printAllVisitingCards();
+        //4. 원본 출력하기
+        System.out.println();
+        System.out.println("4. 원본출력하기");
         originalVcb.printAllVisitingCards();
-        originalVcb.save();
+        */
+
         /*
         System.out.println();
         //복사하기
@@ -253,5 +272,136 @@ public class Main
         originalVcb.last();
         System.out.println(originalVcb.getCurrent());
          */
+        //VisitingCardBinder 클래스 테스트
+        System.out.println("VisitingCardBinder 클래스 테스트");
+        //VisitingCardBinder 디폴트 생성자로 생성하기
+        VisitingCardBinder originalVcb = new VisitingCardBinder();
+        //명함철에 끼울 명함생성하기
+        VisitingCard one = new VisitingCard("정길동", "대리",
+                "01024367967", "Jung@naver.com",
+                "삼성전자", "서울시 서초구", "023692447",
+                "023692448", "Samsung.com");
+        VisitingCard two = new VisitingCard("홍길동", "대리",
+                "01036937428", "Hong@naver.com",
+                "신한은행", "서울 중구",
+                "023347714", "023347715", "Shinhan.com");
+        VisitingCard three = new VisitingCard("차길동", "과장",
+                "01036925571", "Cha@naver.com",
+                "엘지전자", "서울시 강서구",
+                "022397821", "022397822", "LG.com");
+        VisitingCard four = new VisitingCard("김길동", "부장",
+                "01036901127", "Kim@naver.comn",
+                "현대자동차", "울산 북구",
+                "0524379702", "0524379701", "Hyundai.com");
+        VisitingCard five = new VisitingCard("나길동", "사원",
+                "01036928827", "Na@naver.com",
+                "SK하이닉스", "경기도 이천",
+                "-0313692248", "0313692249", "SK.com");
+        VisitingCard six = new VisitingCard("장길동", "전무",
+                "01044287990", "Jang@naver.com",
+                "노랑풍선", "서울 중구",
+                "029912970", "029912971", "Yellow.com");
+        VisitingCard seven = new VisitingCard("홍길동", "이사",
+                "01098712341", "Hong@gmail.com",
+                "아시아나항공", "서울 종로구",
+                "028711297", "028711298", "Asiana.com");
+        //명함철에 명함 끼우기
+        originalVcb.takeIn(one);
+        originalVcb.takeIn(two);
+        originalVcb.takeIn(three);
+        originalVcb.takeIn(four);
+        originalVcb.takeIn(five);
+        originalVcb.takeIn(six);
+        originalVcb.takeIn(seven);
+        //1. 명함철에 끼운 명함들 출력하기
+        System.out.println("1. 명함철에 끼운 명함들 출력하기");
+        originalVcb.printAllVisitingCards();
+        System.out.println();
+        //복사하기
+        VisitingCardBinder copyVcb = originalVcb.clone();
+        //2. 복사본 출력하기
+        System.out.println();
+        System.out.println("2. 복사본 출력하기");
+        copyVcb.printAllVisitingCards();
+        //복사본에 끼운 명함내용 변경하기
+        copyVcb.getVisitingCards().getLast().setPosition("회장");
+        copyVcb.getVisitingCards().getFirst().setPosition("부장");
+        //3. 복사본에 명함 내용 변경한 후에 복사본 출력하기
+        System.out.println();
+        System.out.println("3. 복사본에 명함 내용 변경한 후에 복사본 출력하기");
+        copyVcb.printAllVisitingCards();
+        System.out.println();
+        //4. 복사본에 명함 내용 변경한 후에 원본 출력하기
+        System.out.println("4. 복사본에 명함 내용 변경한 후에 원본 출력하기");
+        originalVcb.printAllVisitingCards();
+        //복사본에서 홍길동으로 명함 찾기
+        ArrayList<VisitingCard> indexes = copyVcb.find("홍길동");
+        //5. 복사본에서 홍길동으로 찾은 명함 출력하기
+        System.out.println();
+        System.out.println("5. 복사본에서 홍길동으로 찾은 명함 출력하기");
+        for (int i = 0; i < indexes.size(); i++)
+        {
+            System.out.printf("%s%d","< ", i).println("번째 명함: " + indexes.get(i) + " >");
+        }
+        //복사본에서 첫번째 홍길동 명함꺼내기
+        VisitingCard visitingCard = copyVcb.takeOut(indexes.get(0));
+        //6. 복사본에서 꺼낸 첫번째 홍길동 명함 출력하기
+        System.out.println();
+        System.out.println("6. 복사본에서 꺼낸 첫번째 홍길동 명함 출력하기");
+        System.out.println(visitingCard);
+        //7. 복사본에서 첫번째 홍길동 명함 꺼낸 후에 복사본 출력하기
+        System.out.println();
+        System.out.println("7. 복사본에서 첫번째 홍길동 명함 꺼낸 후에 복사본 출력하기");
+        copyVcb.printAllVisitingCards();
+        //복사본 정렬하기
+        copyVcb.arrange();
+        //8. 정렬한 복사본 출력하기
+        System.out.println();
+        System.out.println("8. 정렬한 복사본 출력하기");
+        copyVcb.printAllVisitingCards();
+        //9. 원본에서 현재 명함 출력하기
+        System.out.println();
+        System.out.println("9. 원본에서 현재 명함 출력하기");
+        System.out.println(originalVcb.getCurrent());
+        //10. 원본에서 다음으로 이동한 후 출력하기
+        System.out.println();
+        originalVcb.next();
+        System.out.println("10. 원본에서 다음으로 이동한 후 출력하기");
+        System.out.println(originalVcb.getCurrent());
+        //11. 원본에서 마지막으로 이동한 후 출력하기
+        System.out.println();
+        originalVcb.last();
+        System.out.println("11. 원본에서 마지막으로 이동한 후 출력하기");
+        System.out.println(originalVcb.getCurrent());
+        //12. 원본에서 이전으로 이동한 후 출력하기
+        System.out.println();
+        System.out.println("12. 원본에서 이전으로 이동한 후 출력하기");
+        originalVcb.previous();
+        System.out.println(originalVcb.getCurrent());
+        //13. 원본에서 처음으로 이동한 후 출력하기
+        System.out.println();
+        originalVcb.first();
+        System.out.println("13. 원본에서 처음으로 이동한 후 출력하기");
+        System.out.println(originalVcb.getCurrent());
+        //14. 원본에서 이전으로 이동한 후 출력하기
+        System.out.println();
+        originalVcb.previous();
+        System.out.println("14. 원본에서 이전으로 이동한 후 출력하기");
+        System.out.println(originalVcb.getCurrent());
+        //15. 원본에서 처음으로 이동한 후 출력하기
+        System.out.println();
+        System.out.println("15. 원본에서 처음으로 이동한 후 출력하기");
+        originalVcb.first();
+        System.out.println(originalVcb.getCurrent());
+        //16. 원본에서 다음으로 이동한 후 출력하기
+        System.out.println();
+        System.out.println("16. 원본에서 다음으로 이동한 후 출력하기");
+        originalVcb.next();
+        System.out.println(originalVcb.getCurrent());
+        //17. 원본에서 마지막으로 이동한 후 출력하기
+        System.out.println();
+        System.out.println("17. 원본에서 마지막으로 이동한 후 출력하기");
+        originalVcb.last();
+        System.out.println(originalVcb.getCurrent());
     }
 }

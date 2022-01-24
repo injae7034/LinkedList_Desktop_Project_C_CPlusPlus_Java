@@ -2,6 +2,8 @@ package VisitingCardBinder;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
 
 public class VisitingCardBinder implements Cloneable
@@ -297,7 +299,7 @@ public class VisitingCardBinder implements Cloneable
                     //","위치 다음을 시작위치로 재설정한다.
                     beginIndex = endIndex + 1;
                     //url 문자열을 구한다.
-                    url = companyInformation.substring(beginIndex, companyInformation.length());
+                    url = companyInformation.substring(beginIndex);
                     //외부에서 읽은 개인의 정보와 회사의 정보로 명함을 생성한다.
                     visitingCard = new VisitingCard(personalName, position, cellularPhoneNumber,
                             emailAddress, companyName, address, telephoneNumber, faxNumber, url);
@@ -370,5 +372,16 @@ public class VisitingCardBinder implements Cloneable
             }
             personalBufferedWriter.flush();
         } catch (IOException e) { e.printStackTrace(); }
+    }
+    //이름기준으로 오름차순으로 정렬하기
+    public void arrange()
+    {
+        Collections.sort(this.visitingCards, new Comparator<VisitingCard>() {
+            @Override
+            public int compare(VisitingCard one, VisitingCard other)
+            {
+                return one.getPersonalName().compareTo(other.getPersonalName());
+            }
+        });
     }
 }

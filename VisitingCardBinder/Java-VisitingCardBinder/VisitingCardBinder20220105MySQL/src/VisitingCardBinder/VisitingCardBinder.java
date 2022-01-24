@@ -299,7 +299,7 @@ public class VisitingCardBinder implements Cloneable
                     //","위치 다음을 시작위치로 재설정한다.
                     beginIndex = endIndex + 1;
                     //url 문자열을 구한다.
-                    url = companyInformation.substring(beginIndex, companyInformation.length());
+                    url = companyInformation.substring(beginIndex);
                     //외부에서 읽은 개인의 정보와 회사의 정보로 명함을 생성한다.
                     visitingCard = new VisitingCard(personalName, position, cellularPhoneNumber,
                             emailAddress, companyName, address, telephoneNumber, faxNumber, url);
