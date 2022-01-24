@@ -266,8 +266,7 @@ public class VisitingCardBinder implements Cloneable
                     //","위치 다음을 시작위치로 재설정한다.
                     beginIndex = endIndex + 1;
                     //emailAddress를 구한다.
-                    emailAddress = personalInformation.substring(beginIndex,
-                            personalInformation.length());
+                    emailAddress = personalInformation.substring(beginIndex);
                     //읽은 외부데이터로부터 회사의 정보를 구한다.
                     //RandomAcceesFile의 경우 앞의 2자리는 자리수를 나타내기 때문에 2부터 초기화하여 시작한다.
                     beginIndex = 2;
