@@ -193,7 +193,8 @@ public class VisitingCardBinder implements Cloneable
     //visitingCards 구하기
     public LinkedList<VisitingCard> getVisitingCards() { return this.visitingCards; }
 
-    ////외부 파일에 있는 정보를 읽어서 VisitingCardBinder에 Load하기
+    /*
+    //외부 파일에 있는 정보를 읽어서 VisitingCardBinder에 Load하기(substring사용하기)
     public int load()
     {
         //해당위치에 있는 data를 읽어 File객체를 생성한다.
@@ -310,6 +311,73 @@ public class VisitingCardBinder implements Cloneable
         //load한 명함 수를 반환한다.
         return this.length;
     }
+     */
+
+    //외부 파일에 있는 정보를 읽어서 VisitingCardBinder에 Load하기(split사용하기)
+    public int load()
+    {
+        //해당위치에 있는 data를 읽어 File객체를 생성한다.
+        File personalFile = new File("Personal.txt");
+        File companyFile = new File("Company.txt");
+        //해당 위치에 파일이 존재하면
+        if(personalFile.exists() == true && companyFile.exists() == true)
+        {
+            //입력을 위한 스트림을 생성한다.
+            try(Reader personalReader = new FileReader(personalFile);
+                BufferedReader personalBufferedReader = new BufferedReader(personalReader);
+                RandomAccessFile companyAccessFile = new RandomAccessFile("Company.txt", "r");)
+            {
+                VisitingCard visitingCard = null;//visitingCard를 임시저장할 공간
+                String personalInformation = "";//한줄단위로 읽은 개인 데이터를 저장할 임시공간
+                String companyInformation = "";//한줄단위로 읽은 회사 데이터를 저장할 임시공간
+                String[] personalTokens = null;//한줄단위로 읽은 개인데이터를 콤마단위로 분리해서 저장하는 배열
+                String[] companyTokens = null;//한줄단위로 읽은 회사데이터를 콤마단위로 분리해서 자장하는 배열
+                int companyCode = 0;//한줄단위로 읽은 데이터 중에서 개인의 회사코드를 정수로 변경할 공간
+                int i = 0;//반복제어변수
+                //개인데이터를 파일의 마지막까지 읽는다.
+                while((personalInformation = personalBufferedReader.readLine()) != null)
+                {
+                    //한줄 단위로 읽은 개인데이터를 콤마(,)단위로 분리해서 문자열 배열에 저장한다.
+                    personalTokens = personalInformation.split(",");
+                    //분리한 개인데이터의 개수가 5이면
+                    if(personalTokens.length == 5)
+                    {
+                        //companyCode를 정수로 바꿔준다.
+                        companyCode = Integer.parseInt(personalTokens[0]);
+                        //회사파일을 파일의 처음으로 이동시킨다.
+                        companyAccessFile.seek(0);
+                        //companyCode까지 반복하면서 그리고 회사파일이 끝이 아닐동안 반복한다.
+                        i = 0;
+                        while(i < companyCode &&
+                                (companyInformation = companyAccessFile.readLine()) != null)
+                        {
+                            i++;
+                        }
+                        //RandomAccessFile로 읽으면 한글이 깨지기 때문에 이를 안깨지게 정상화처리해줌
+                        companyInformation = new String(companyInformation.
+                                getBytes("iso-8859-1"), "utf-8");
+                        //RandomAccessFile로 읽으면 앞의 2자리는 자리수를 의미하는데 이를 제외시킴.
+                        companyInformation = companyInformation.substring(2);
+                        //한줄 단위로 읽은 회사데이터를 콤마(,)단위로 분리해서 문자열 배열에 저장한다.
+                        companyTokens = companyInformation.split(",");
+                        //분리한 회사 데이터가 5개이면
+                        if(companyTokens.length == 5)
+                        {
+                            //외부에서 읽은 개인의 정보와 회사의 정보로 명함을 생성한다.
+                            visitingCard = new VisitingCard(personalTokens[1], personalTokens[2],
+                                    personalTokens[3], personalTokens[4], companyTokens[0],
+                                    companyTokens[1], companyTokens[2], companyTokens[3], companyTokens[4]);
+                            //명함을 명함철에 끼운다.
+                            this.takeIn(visitingCard);
+                        }
+                    }
+                }
+            } catch (IOException e) { e.printStackTrace(); }
+        }
+        //load한 명함 수를 반환한다.
+        return this.length;
+    }
+/*
     //명함철에 있는 명함 정보를 외부파일에 저장하기
     public void save()
     {
@@ -373,6 +441,61 @@ public class VisitingCardBinder implements Cloneable
             personalBufferedWriter.flush();
         } catch (IOException e) { e.printStackTrace(); }
     }
+ */
+
+    //명함철에 있는 명함 정보를 외부파일에 저장하기
+    public void save()
+    {
+        //해당위치에 있는 data를 읽어 File객체를 생성한다.
+        File personalFile = new File("Personal.txt");
+        //출력을 위한 스트림을 생성한다.
+        try(Writer personalWriter = new FileWriter(personalFile);
+            BufferedWriter personalBufferedWriter = new BufferedWriter(personalWriter);
+            RandomAccessFile companyAccessFile = new RandomAccessFile("Company.txt", "rw");)
+        {
+            String companyInformation = "";//외부파일에서 회사정보를 담을 공간
+            int companyCode = 0;//회사코드로 사용
+            //명함철의 마지막 명함까지 반복한다.
+            for(VisitingCard visitingCard : this.visitingCards)
+            {
+                //외부의 회사데이터 파일을 처음으로 이동시킨다.
+                companyAccessFile.seek(0);
+                //코드를 초기화시킨다.
+                companyCode = 1;
+                //외부 회사데이터 파일이 마지막이 아닌 동안 반복한다.
+                while((companyInformation = companyAccessFile.readLine()) != null)
+                {
+                    //한글이 깨지기 때문에 이를 안깨지게 정상화처리해줌
+                    companyInformation = new String(companyInformation.
+                            getBytes("iso-8859-1"), "utf-8");
+                    //RandomAccess의 writeUTF는 앞에 2byte에 길이를 같이 써서 출력하기 때문에
+                    //상호 앞에 이를 제외하고 읽어야함.
+                    // 외부 회사파일의 상호명과 명함철에서 읽은 명함의 상호명과 서로 같으면
+                    if(companyInformation.substring(2, companyInformation.indexOf(","))
+                            .equals(visitingCard.getCompanyName()) == true)
+                    {
+                        break;
+                    }
+                    //회사의 코드를 증가시킨다.
+                    companyCode++;
+                }
+                //파일의 마지막이면(명함철에서 읽은 명함의 상호명이 외부 회사파일의 상호명에 없으면)
+                if(companyInformation == null)
+                {
+                    //외부 회사파일에 중복이 안된 명함의 회사 정보를 출력한다.
+                    companyAccessFile.writeUTF(visitingCard.getCompanyName()+ ","
+                            + visitingCard.getAddress() + "," + visitingCard.getTelephoneNumber() +
+                            "," + visitingCard.getFaxNumber() + "," + visitingCard.getUrl() + "\n");
+                }
+                //외부 개인파일에 개인 정보를 출력한다.
+                personalBufferedWriter.write(companyCode + "," +
+                        visitingCard.getPersonalName() + "," + visitingCard.getPosition() + "," +
+                        visitingCard.getCellularPhoneNumber() + "," + visitingCard.getEmailAddress() + "\n");
+            }
+            personalBufferedWriter.flush();
+        } catch (IOException e) { e.printStackTrace(); }
+    }
+
     //이름기준으로 오름차순으로 정렬하기
     public void arrange()
     {
