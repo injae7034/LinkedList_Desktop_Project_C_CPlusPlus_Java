@@ -1,0 +1,8 @@
+﻿  FindingForm.c
+  TakingInForm.c
+  TakingOutForm.c
+  VisitingCardBinder.c
+  VisitingCardBinderForm.c
+  코드를 생성하고 있습니다...
+C:\Users\injae\Downloads\코딩\C language\Visual Studio 2019 project\repos\VisitingCardBinder20200512\VisitingCardBinder20200512\TakingInForm.c(106): warning C4715: 'TakingInForm_OnCompanyNameKillFocus': 모든 제어 경로에서 값을 반환하지는 않습니다.
+  VisitingCardBinder20200512.vcxproj -> C:\Users\injae\Downloads\코딩\C language\Visual Studio 2019 project\repos\VisitingCardBinder20200512\Debug\VisitingCardBinder20200512.exe
