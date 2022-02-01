@@ -1,0 +1,12 @@
+﻿  FindingForm.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  TakingInForm.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  TakingOutForm.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  WordCardBinderApp.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  WordCardBinderForm.cpp
+  _WIN32_WINNT not defined. Defaulting to _WIN32_WINNT_MAXVER (see WinSDKVer.h)
+  코드를 생성하고 있습니다...
+  WordCardBinderWithC++20201016.vcxproj -> C:\Users\injae\Downloads\코딩\C language\Visual Studio 2019 project\repos\WordCardBinderWithC++20201016\Debug\WordCardBinderWithC++20201016.exe
